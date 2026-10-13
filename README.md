@@ -25,6 +25,29 @@ This project simulates the microscopic movement of electrons within a semiconduc
 4. Hardware Acceleration:
      - Utilizes OpenGL for rendering, passing simulation data directly to the GPU via Vertex Buffer Objects (VBOs).
 
+## Performance
+The physics step was optimized for cache locality and multi-core CPUs:
+* **Struct-of-arrays layout**: each particle field lives in its own contiguous array, so the update loop streams through memory linearly and the compiler can vectorize it
+* **Per-thread xorshift RNG**: replaces `rand()`, which is slower and not thread-safe
+* **Zero per-frame allocation**: vertices are written in place into a GPU staging buffer allocated once at startup
+* **Persistent worker pool**: particles are split across cores; it only kicks in above ~25K particles, where the work outweighs the cost of waking threads
+
+Measured on an Apple M5 (`-O2`), 1M particles:
+
+| Version | Physics step | Speedup |
+|---|---|---|
+| Original (array-of-structs, `rand()`, per-frame `push_back`) | 26.4 ms | 1.0x |
+| Optimized, 1 thread | 9.4 ms | 2.8x |
+| Optimized, 4 threads | 3.5 ms | 7.6x |
+| Optimized, 10 threads | 2.6 ms | 10.1x |
+
+At the default 1,500-particle grid, the step dropped from 39 µs to 14 µs. The Lab Controls panel shows the live physics step time.
+
+Run the benchmark yourself (headless, no window):
+```
+./Electrical_Simulation --bench [particles] [frames]
+```
+
 ## Tech Stack
 * C++11/17
 * OpenGL 3.3
