@@ -1,5 +1,5 @@
 # Lattice: Multithreaded Semiconductor Simulator
-A real-time C++ engine that simulates up to 1M charge carriers in a semiconductor crystal lattice, built around a cache-friendly data layout, a custom worker thread pool, and a streaming CPU→GPU render pipeline.
+A real-time C++ engine that simulates charge carriers in a semiconductor crystal lattice (physics step benchmarked at 1M particles), built around a cache-friendly data layout, a custom worker thread pool, and a streaming CPU→GPU render pipeline.
 
 **10.1× faster** physics step after optimization (26.4 → 2.6 ms/frame at 1M particles on Apple Silicon).
 
